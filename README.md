@@ -4,6 +4,8 @@
 
 A function call is implemented as a jump to a label rather than a CALL instruction. The caller provides the address of a continuation to call when the function ends.
 
+The following description applies to the Intel 64 bit platform.
+
 ### Standalone function call
 
 Parameters are passed in RDI, RSI, RDX and RCX. Extra parameters or parameters too large for a register are passed on the stack.
@@ -19,6 +21,8 @@ The return value is stored in RDX:RAX. If the return value is too large for a pa
 This means the caller must reserve enough space on stack for the largest possible return value (according to function signature) before the parameters.
 
 The stack is truncated by the function to leave just the return value on stack before calling the return continuation.
+
+The function output may be memoised if the function does not take a capability as argument, reducing the number of calculations.
 
 ### Generator (yielding function) call
 
@@ -36,4 +40,12 @@ The stack pointer is not reset by the generator when yielding a value. The gener
 
 The generator also passes the resume continuation in R8 and the unwind continuation in R9.
 
-When the generator ends or an event is raised, the generator sets the stack pointer to SP1 and returns like a normal function without arguments.
+When the generator ends or an event is raised, the generator sets the stack pointer back to SP1 and returns like a normal function without arguments.
+
+### Associative function calls
+
+Associative functions always take two arguments of same type. The arguments are passed in RDX:RAX and RSI:RDI if they fit in a pair of registers, or on stack otherwise.
+
+They are otherwise similar to standalone functions.
+
+If an associative function is called with more than two arguments in the source file, then the function is called multiple times with the result of a function call used as argument until all parameters are consumed. The order of calls is not defined, but the order of arguments is preserved.
