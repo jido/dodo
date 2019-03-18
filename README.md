@@ -18,7 +18,7 @@ The return value is stored in RDX:RAX. If the return value is too large for a pa
 
 This means the caller must reserve enough space on stack for the largest possible return value (according to function signature) before the parameters.
 
-The stack is truncated by the function before calling the return continuation.
+The stack is truncated by the function to leave just the return value on stack before calling the return continuation.
 
 ### Generator (yielding function) call
 
@@ -26,14 +26,14 @@ For a generator there are two stack pointers to consider: the calling function s
 
 The calling function sets the stack pointer to SP2 before calling the generator and passes SP1 as first argument.
 
-Spilled function parameters are stored on SP2 and large return values are stored on SP1.
+Spilled function parameters and continuations are stored on SP2.
 
 In general, a generator has three continuations: the yield continuation, the end continuation (which returns nothing) and the event continuation.
 
-When yielding a value, if the returned value is too large for DX:AX it is stored on SP1.
+When yielding a value, if the returned value is too large for DX:AX it is stored in a reserved space on SP1.
 
-The stack pointer is not reset by the generator. The generator passes SP1 in register RDI.
+The stack pointer is not reset by the generator when yielding a value. The generator passes SP1 in register RDI.
 
-The resume continuation is passed in R8 and the unwind continuation in R9.
+The generator also passes the resume continuation in R8 and the unwind continuation in R9.
 
 When the generator ends or an event is raised, the generator sets the stack pointer to SP1 and returns like a normal function without arguments.
