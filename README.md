@@ -30,10 +30,10 @@ Spilled function parameters are stored on SP2 and large return values are stored
 
 In general, a generator has three continuations: the yield continuation, the end continuation (which returns nothing) and the event continuation.
 
-When yielding a value, if the return value is too large for DX:AX it is stored on SP1.
+When yielding a value, if the returned value is too large for DX:AX it is stored on SP1.
 
 The stack pointer is not reset by the generator. The generator passes SP1 in register RDI.
 
-The resume continuation is passed in R8 and the rewind continuation in R9.
+The resume continuation is passed in R8 and the unwind continuation in R9.
 
 When the generator ends or an event is raised, the generator sets the stack pointer to SP1 and returns like a normal function without arguments.
