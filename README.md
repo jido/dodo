@@ -22,7 +22,7 @@ The return value is stored in RDX:RAX. If the return value is too large for a pa
 | stack
 |
 | [ return  ]
-| [  value  ]
+| [ value   ]
 | -----------
 | [ params  ]
 | -----------
@@ -67,9 +67,9 @@ v    SP1                     v     SP2
 
 In general, a generator has three continuations: the yield continuation, the end continuation (which returns nothing) and the event continuation.
 
-The stack pointer is not reset by the generator when yielding a value. The generator passes SP1 in register RDI. The stack pointer should remain at SP2 when the generator resumes.
+The stack pointer is not reset by the generator when yielding a value. The stack pointer has to be set to SP2 when the generator resumes.
 
-The generator also passes the resume continuation in register R8 and the unwind continuation in register R9.
+The generator passes SP1 in register RDI when yielding a value. It also passes the resume continuation in register R8 and the unwind continuation in register R9.
 
 When the generator ends or an event is raised, the generator sets the stack pointer back to SP1 and returns like a normal function without arguments.
 
@@ -77,7 +77,9 @@ When the generator ends or an event is raised, the generator sets the stack poin
 
 Member functions need access to the object which they are applied to.
 
-The object type, which is also the type that defines the function or method is passed as function context. The parent context is the scope where that type is defined, which can be a module or another type.
+The object without type information is passed as hidden first parameter in register RDI.
+
+The object type is passed as function context. The function context holds a reference to its parent context in first postition. The parent context is the scope where that type is defined, which can be a module or another type.
 
 ~~~
  context
@@ -87,13 +89,11 @@ The object type, which is also the type that defines the function or method is p
 [  type  ]
 ~~~
 
-The object without type information is passed as hidden first parameter in register RDI.
-
 ### Constructor and method calls
 
 Constructors and member methods receive the master capability as implicit first argument via the RDI register.
 
-A method receives the object it is applied to as a hidden second parameter in register RSI.
+A method receives the object it is applied to in register RSI as a hidden second parameter.
 
 The function context is the method type in case of a method and the type by same name in case of a constructor.
 
