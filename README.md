@@ -22,13 +22,13 @@ This means the caller must reserve enough space on stack for the largest possibl
 
 The stack is truncated by the function to leave just the return value on stack before calling the return continuation.
 
-The function output may be memoised if the function does not take a capability as argument, reducing the number of calculations.
+Unless capabilities are involved, the function output may be memoised, reducing the number of calculations.
 
 ### Generator (yielding function) call
 
 For a generator there are two stack pointers to consider: the calling function stack (noted SP1) and the generator stack (noted SP2).
 
-The calling function sets the stack pointer to SP2 before calling the generator and passes SP1 as first argument.
+The calling function sets the stack pointer to SP2 before calling the generator and passes SP1 as implicit first argument.
 
 Spilled function parameters and continuations are stored on SP2.
 
@@ -44,8 +44,61 @@ When the generator ends or an event is raised, the generator sets the stack poin
 
 ### Associative function calls
 
-Associative functions always take two arguments of same type. The arguments are passed in RDX:RAX and RSI:RDI if they fit in a pair of registers, or on stack otherwise.
+Associative functions always take two arguments of same type. The parameters are passed in RDX:RAX and RSI:RDI if they fit in a pair of registers, or on stack otherwise. The context is passed in the RBX register.
 
 They are otherwise similar to standalone functions.
 
-If an associative function is called with more than two arguments in the source file, then the function is called multiple times with the result of a function call used as argument until all parameters are consumed. The order of calls is not defined, but the order of arguments is preserved.
+If an associative function is called with more than two parameters in the source file, then the function is called multiple times with the result of a function call used as argument until all parameters are consumed. The order of calls is not defined but the order of arguments is preserved.
+
+### Member function calls
+
+Member functions need access to the object which they are applied to.
+
+If the object is polymorphic (derived from class) then the object reference is passed as function context. The object is comprised of a pointer to its class, which is interpreted as the parent context, and the object value or object reference depending on size.
+
+~~~
+  context                     context
+
+[ &class  ]        or       [  &class  ]
+[ obj.val ]                 [ &obj.val ]
+~~~
+
+If the object is non-polymorphic then the type that defines the function or method is passed as function context. The parent context is the scope where that type is defined, which can be a module or another type.
+
+~~~
+ context
+ 
+[ &scope ]
+[  type  ]
+~~~
+
+The object without a class pointer is passed as hidden first parameter in RDI.
+
+### Constructor and method calls
+
+Constructors and member methods receive the master capability as implicit first argument in RDI.
+
+The function context is the method type in case of a method and the type by same name in case of a constructor.
+
+If the method is defined in a polymorphic type then the parent context is the object which the method is applied to.
+
+~~~
+   context
+
+[  &object   ]
+[ &meth.type ]
+~~~
+
+If the method is defined in a non-polynomic type then the parent context is a pair: (type where the method is defined, pointer to the object which the method is applied to).
+
+~~~
+  parent
+  context                         context
+
+[  &type  ]                    [  &parent  ]
+[ &object ]                    [ &meth.type]
+~~~
+
+The context is built on-demand before calling the method.
+
+Unless the method defines attributes or a settable conversion function, a method return value is empty.
