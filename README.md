@@ -37,6 +37,14 @@ The stack is truncated by the function to leave just the return value on stack b
 
 Unless capabilities are involved, the function output may be memoised, reducing the number of calculations.
 
+### Associative function calls
+
+Associative functions always take two arguments of same type. The parameters are passed in RDX:RAX and RSI:RDI if they fit in a pair of registers, or on stack otherwise. The context is passed in the RBX register.
+
+They are otherwise similar to standalone functions.
+
+If an associative function is called with more than two parameters in the source file, then the function is called multiple times with the result of a function call used as argument until all parameters are consumed. The order of calls is not defined but the order of arguments is preserved.
+
 ### Generator (yielding function) call
 
 For a generator there are two stack pointers to consider: the calling function stack (noted SP1) and the generator stack (noted SP2).
@@ -59,19 +67,11 @@ v    SP1                     v     SP2
 
 In general, a generator has three continuations: the yield continuation, the end continuation (which returns nothing) and the event continuation.
 
-The stack pointer is not reset by the generator when yielding a value. The generator passes SP1 in register RDI.
+The stack pointer is not reset by the generator when yielding a value. The generator passes SP1 in register RDI. The stack pointer should remain at SP2 when the generator resumes.
 
 The generator also passes the resume continuation in register R8 and the unwind continuation in register R9.
 
 When the generator ends or an event is raised, the generator sets the stack pointer back to SP1 and returns like a normal function without arguments.
-
-### Associative function calls
-
-Associative functions always take two arguments of same type. The parameters are passed in RDX:RAX and RSI:RDI if they fit in a pair of registers, or on stack otherwise. The context is passed in the RBX register.
-
-They are otherwise similar to standalone functions.
-
-If an associative function is called with more than two parameters in the source file, then the function is called multiple times with the result of a function call used as argument until all parameters are consumed. The order of calls is not defined but the order of arguments is preserved.
 
 ### Member function calls
 
@@ -93,7 +93,7 @@ The object without type information is passed as hidden first parameter in regis
 
 Constructors and member methods receive the master capability as implicit first argument via the RDI register.
 
-The object which a method is applied to is passed as a hidden second parameter in register RSI.
+A method receives the object it is applied to as a hidden second parameter in register RSI.
 
 The function context is the method type in case of a method and the type by same name in case of a constructor.
 
