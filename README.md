@@ -65,9 +65,9 @@ When yielding a value, if the returned value is too large for the register pair 
 v    SP1                     v     SP2
 ~~~
 
-In general, a generator has three continuations: the yield continuation, the end continuation (which returns nothing) and the event continuation.
+In general, a generator has three continuations: the yield continuation, the end continuation and the event continuation.
 
-The stack pointer is not reset by the generator when yielding a value. The stack pointer has to be set to SP2 when the generator resumes.
+The stack pointer is not reset by the generator when yielding a value. The stack pointer has to be set to SP2 when the generator is resumed.
 
 The generator passes SP1 in register RDI when yielding a value. It also passes the resume continuation in register R8 and the unwind continuation in register R9.
 
@@ -79,7 +79,7 @@ Member functions need access to the object which they are applied to.
 
 The object without type information is passed as hidden first parameter in register RDI.
 
-The object type is passed as function context. The function context holds a reference to its parent context in first postition. The parent context is the scope where that type is defined, which can be a module or another type.
+The object type is passed as function context. A function context holds a reference to its parent context in first position. The parent context is the scope where the object type is defined, which can be a module or another type.
 
 ~~~
  context
@@ -107,7 +107,7 @@ A method parent context is the type where the method is defined.
 [ meth.type ]
 ~~~
 
-Unless the method defines attributes or a settable conversion function, a method return value is empty but for a private reference to the object it was applied to.
+Unless the method defines attributes, a method return value is empty except for a private reference to the object it was applied to.
 
 ## Memory layout of objects
 
