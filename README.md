@@ -25,6 +25,7 @@ The return value is stored in RDX:RAX. If the return value is too large for a pa
 | [  value  ]
 | -----------
 | [ params  ]
+| -----------
 | [ contins ]
 |
 v
@@ -49,7 +50,8 @@ When yielding a value, if the returned value is too large for the register pair 
 ~~~
     caller                      generator
 |                            |
-| [ return ]                 | [ params  ]
+|                            | [ params  ]
+| [ return ]                 | -----------
 | [ value  ]                 | [ contins ]
 |                            |
 v    SP1                     v     SP2
@@ -75,25 +77,17 @@ If an associative function is called with more than two parameters in the source
 
 Member functions need access to the object which they are applied to.
 
-If the object is polymorphic (derived from class) then the object reference is passed as function context. The object is comprised of a pointer to its class, which is interpreted as the parent context, and the object value or object reference depending on size.
-
-~~~
-  object                       object
-
-[ &class  ]        or       [  &class  ]
-[ obj.val ]                 [ &obj.val ]
-~~~
-
-If the object is non-polymorphic then the type that defines the function or method is passed as function context. The parent context is the scope where that type is defined, which can be a module or another type.
+The object type, which is also the type that defines the function or method is passed as function context. The parent context is the scope where that type is defined, which can be a module or another type.
 
 ~~~
  context
  
 [ &scope ]
+[--------]
 [  type  ]
 ~~~
 
-The object without a class pointer is passed as hidden first parameter in register RDI.
+The object without type information is passed as hidden first parameter in register RDI.
 
 ### Constructor and method calls
 
@@ -109,7 +103,22 @@ A method parent context is the type where the method is defined.
    context
 
 [   &type   ]
+[-----------]
 [ meth.type ]
 ~~~
 
 Unless the method defines attributes or a settable conversion function, a method return value is empty but for a private reference to the object it was applied to.
+
+## Memory layout of objects
+
+### Polymorphic objects
+
+The object is comprised of a reference to its class, and the object value or object reference depending on size. If the object value is no larger than a pointer then it is stored directly.
+
+~~~
+  object                       object
+
+[ &class  ]        or       [  &class  ]
+[---------]                 [----------]
+[ obj.val ]                 [ &obj.val ]
+~~~
