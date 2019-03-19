@@ -47,7 +47,7 @@ Spilled function parameters and continuations are stored on SP2.
 When yielding a value, if the returned value is too large for the register pair DX:AX it is stored in a reserved space on SP1.
 
 ~~~
-|   caller                   |  generator
+    caller                      generator
 |                            |
 | [ return ]                 | [ params  ]
 | [ value  ]                 | [ contins ]
@@ -99,7 +99,7 @@ The object without a class pointer is passed as hidden first parameter in regist
 
 Constructors and member methods receive the master capability as implicit first argument via the RDI register.
 
-The object it is applied to is passed to a method as a hidden second parameter in register RSI.
+The object which a method is applied to is passed as a hidden second parameter in register RSI.
 
 The function context is the method type in case of a method and the type by same name in case of a constructor.
 
