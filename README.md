@@ -49,29 +49,31 @@ If an associative function is called with more than two parameters in the source
 
 For a generator there are two stack pointers to consider: the calling function stack (noted SP1) and the generator stack (noted SP2).
 
-The calling function sets the stack pointer to SP2 before calling the generator and passes SP1 as implicit first argument.
+The calling function allocates the generator stack. Function parameters are stored on SP2 before the first call.
 
-Spilled function parameters and continuations are stored on SP2.
-
-When yielding a value, if the returned value is too large for the register pair DX:AX it is stored in a reserved space on SP1.
+The return value is stored in RDX:RAX. If the return value is too large for a pair of registers it is stored in a reserved space on SP1.
 
 ~~~
     caller                      generator
 |                            |
-|                            | [ params  ]
-| [ return ]                 | -----------
-| [ value  ]                 | [ contins ]
+|                            | 
+| [ return ]                 | [ params ]
+| [ value  ]                 |
 |                            |
-v    SP1                     v     SP2
+v    SP1                     v    SP2
 ~~~
+
+Continuations are passed in registers R8, R9, R10 and R11. Extra continuations are stored on SP2 each time the generator is called.
 
 In general, a generator has three continuations: the yield continuation, the end continuation and the event continuation.
 
-The stack pointer is not reset by the generator when yielding a value. The stack pointer has to be set to SP2 when the generator is resumed.
+The calling function needs to set the stack pointer to SP2 before calling the generator. It passes SP1 in register RDI.
 
-The generator passes SP1 in register RDI when yielding a value. It also passes the resume continuation in register R8 and the unwind continuation in register R9.
+The stack pointer is not reset by the generator when yielding a value. The generator passes SP1 back to the calling function in register RDI.
 
-When the generator ends or an event is raised, the generator sets the stack pointer back to SP1 and returns like a normal function without arguments.
+The yielded value is stored in RDX:RAX or on SP1 as described above. The resume continuation is stored in register R8 and the unwind continuation in register R9.
+
+When the generator ends or an event is raised, the generator sets the stack pointer back to SP1 and returns like a normal function.
 
 ### Member function calls
 
