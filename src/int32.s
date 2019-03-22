@@ -5,8 +5,8 @@
 _main:
   lea rax, _int32[rip]            ## module (_int32)
   mov rax, int32_type[rax]        ## int32.Integer(<bits: 32>)
-  mov edi, 6
-  mov esi, 15
+  mov edi, 3
+  mov esi, 5
   lea r8, main_end [rip]
   lea r9, main_error [rip]
   jmp toPower[rax]
@@ -83,7 +83,7 @@ _modulo:
   lea r8, modulo_end [rip]
   jmp _over                             ## note: assumes rcx is preserved
 modulo_end:
-  mov eax, edx
+  xchg eax, edx
   jmp rcx
 
 _opposite:
@@ -253,7 +253,7 @@ _Integer_bits_32:
   meta          =010
   instance      =020
   size          =030
-  add           =040
+  add2          =040
   null          =050
   nil           =060
   multiply      =070
@@ -318,4 +318,4 @@ Enumerable_offset:
   .quad (Enumerable - _Integer_bits_32)
 Ordered_offset:
   .quad (Ordered - _Integer_bits_32)
-
+Integer_bits_32_meta_end:
