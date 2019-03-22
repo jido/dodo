@@ -1,20 +1,20 @@
   .intel_syntax noprefix
 
-  .globl  _main                   ## -- Begin function main
+  .globl  _main
   .p2align  4
 _main:
   lea rax, _int32[rip]            ## module (_int32)
   mov rax, int32_type[rax]        ## int32.Integer(<bits: 32>)
   mov edi, 6
-  mov esi, 3
+  mov esi, 15
   lea r8, main_end [rip]
-  lea r9, zero [rip]
+  lea r9, main_error [rip]
   jmp toPower[rax]
-zero:
+main_error:
   mov al, -1
 main_end:
   ret
-                                  ## -- End function
+
 
 _add:                               ## associative function
   add eax, edi
@@ -55,9 +55,9 @@ _magnitude:
 
 _multiply:                        ## associative function
   imul eax, edi
-  jo times_overflow
+  jo multiply_overflow
   jmp r8
-times_overflow:
+multiply_overflow:
   jmp r9
 
 _minus:
@@ -157,13 +157,18 @@ toPower_loop:
   jmp rcx                           ## generate next value
 toPower_next:
   mov rcx, r8                       ## generator -> rcx
+  mov r10, r9                       ## unwind -> r10
   mov rdx, rdi                      ## stack pointer -> rdx
   mov edi, dword ptr r[rdx]         ## r -> edi
   lea r8, toPower2 [rip]
-  jmp _multiply                     ## r * generated value -- note: assumes rcx and rdx are preserved
+  lea r9, toPower3 [rip]
+  jmp _multiply                     ## r * generated value -- note: assumes rcx, rdx and r10 are preserved
 toPower2:
   mov dword ptr r[rdx], eax         ## save r
   jmp toPower_loop
+toPower3:
+  lea r9, toPower_overflow [rip]
+  jmp r10                           ## unwind generator
 toPower_done:
   pop rax
   pop r9
@@ -200,7 +205,7 @@ prodSquares_loop:
   mov rdi, stackp[rsp]
   mov esi, eax                    ## x -> esi
   lea r8, prodSquares1 [rip]
-  lea r9, prodSquares_end [rip]
+  lea r9, prodSquares_short_end [rip]
   jmp yield[rsp]                  ## yield x
 prodSquares1:
   mov yield[rsp], r8
@@ -218,6 +223,7 @@ prodSquares_next:
   jmp _multiply                   ## square x -- note: assumes edx is preserved
 prodSquares_end:
   mov r9, end[rsp]
+prodSquares_short_end:
   mov rsp, stackp[rsp]            ## restore caller stack pointer
   jmp r9
 prodSquares_overflow:
