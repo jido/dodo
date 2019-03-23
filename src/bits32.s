@@ -3,10 +3,12 @@
   .globl  _main
   .p2align  4
 _main:
+  lea rax, _bits32[rip]
+  mov rax, bits32_type[rax]           ## address of type
   mov rdi, rsp
   lea r8, main_next[rip]
   lea r9, main_end[rip]
-  jmp _indices                        ## first value
+  jmp indices[rax]                    ## first value
 main_next:
   mov rcx, r8
   lea r8, main_next2[rip]
@@ -67,8 +69,8 @@ _count:
   jmp r8
  
 _indices:
-  mov eax, 0xffffffff
-  push rax
+  mov ecx, universe[rax]              ## all the bits
+  push rcx
   jmp _value
    
 _strictSubsetOf:                      ## true if all bits of b1 belong to b2, but not the other way around
@@ -185,6 +187,7 @@ _type:
   .data
   .globl _bits32
 _bits32:
+  bits32_type =0
   .quad _Bitset_size_32
   
 _Bitset_size_32:
@@ -250,7 +253,7 @@ Iterable:
   .quad _rotateRight
   .quad _value
   .byte 1                     ## constantSpace
-  .zero 7
+  .zero 7                     ## 7 bytes padding
 Bitset_size_32_end:
 
 _Bitset_size_32_meta:
@@ -270,4 +273,4 @@ Countable_offset:
   .quad (Countable - _Bitset_size_32)
 Iterable_offset:
   .quad (Iterable - _Bitset_size_32)
-Bitset_bits_32_meta_end:
+Bitset_size_32_meta_end:
