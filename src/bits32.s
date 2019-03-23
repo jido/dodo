@@ -6,24 +6,24 @@ _main:
   mov rdi, rsp
   mov eax, 0x8
   push rax
-  lea r8, main_next [rip]
-  lea r9, main_end [rip]
+  lea r8, main_next[rip]
+  lea r9, main_end[rip]
   jmp _value
 main_next:
   mov rcx, r8
-  lea r8, main_next2 [rip]
-  lea r9, main_end [rip]
+  lea r8, main_next2[rip]
+  lea r9, main_end[rip]
   jmp rcx
 main_next2:
   mov rcx, r9
-  lea r9, main_end [rip]
+  lea r9, main_end[rip]
   jmp rcx
 main_end:
   ret
 
 
 _union:                               ## associative function
-	or eax, edi
+  or eax, edi
   jmp r8
 
 _intersection:                        ## associative function
@@ -153,8 +153,8 @@ value_test:
   jz value_loop
   mov [rsp], rax
   mov rcx, r8
-  lea r8, value_next [rip]
-  lea r9, value_end [rip]
+  lea r8, value_next[rip]
+  lea r9, value_end[rip]
   jmp rcx
 value_next:
   mov rax, [rsp]
