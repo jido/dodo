@@ -4,20 +4,23 @@
   .p2align  4
 _main:
   mov rdi, rsp
-  mov eax, 0x8
-  push rax
   lea r8, main_next[rip]
   lea r9, main_end[rip]
-  jmp _value
+  jmp _indices                        ## first value
 main_next:
   mov rcx, r8
   lea r8, main_next2[rip]
   lea r9, main_end[rip]
-  jmp rcx
+  jmp rcx                             ## second value
 main_next2:
+  mov rcx, r8
+  lea r8, main_next3[rip]
+  lea r9, main_end[rip]
+  jmp rcx                             ## third value
+main_next3:
   mov rcx, r9
   lea r9, main_end[rip]
-  jmp rcx
+  jmp rcx                             ## unwind generator
 main_end:
   ret
 
@@ -140,9 +143,12 @@ _rotateRight:
   ror eax, cl
   jmp r8
 
-_value:                                 ## yields the value of the bits in the input
+  ## Generator yielding the value of the bits in the input
+  input =010
+  bit =0
+_value:
   sub rsp, 010
-  mov rcx, 010[rsp]
+  mov rcx, input[rsp]
   mov eax, 1
   jmp value_test
 value_loop:
@@ -151,16 +157,15 @@ value_loop:
 value_test:
   test ecx, eax
   jz value_loop
-  mov [rsp], rax
+  mov bit[rsp], rax
   mov rcx, r8
   lea r8, value_next[rip]
   lea r9, value_end[rip]
   jmp rcx
 value_next:
-  mov rax, [rsp]
-  mov rcx, 010[rsp]
+  mov rax, bit[rsp]
+  mov rcx, input[rsp]
   jmp value_loop
 value_end:
   mov rsp, rdi
   jmp r9
-  
