@@ -81,9 +81,8 @@ strictSubsetOf_not:
   jmp r9
 
 _subsetOf:                            ## true if all bits of b1 belong to b2
-  mov eax, edi
-  and eax, esi
-  cmp eax, edi
+  and esi, edi
+  cmp edi, esi
   jne subsetOf_not
   jmp r8
 subsetOf_not:
@@ -97,9 +96,8 @@ strictSupersetOf_not:
   jmp r9
   
 _supersetOf:                          ## true if all bits of b2 belong to b1
-  mov eax, edi
-  or eax, esi
-  cmp eax, edi
+  or esi, edi
+  cmp edi, esi
   jne supersetOf_not
   jmp r8
 supersetOf_not:
