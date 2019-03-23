@@ -62,6 +62,10 @@ _indexOf:                             ## precondition: esi is a bit value in the
 indexOf_unknown:
   jmp r9
  
+_count:
+  popcnt eax, edi
+  jmp r8
+ 
 _indices:
   mov eax, 0xffffffff
   push rax
@@ -169,3 +173,101 @@ value_next:
 value_end:
   mov rsp, rdi
   jmp r9
+
+_instance:
+  lea rax, _int32[rip]                ## pull prototype value from _int32
+  jmp r8
+
+_type:
+  lea rax, _bits32[rip]
+  jmp r8
+
+  .data
+  .globl _bits32
+_bits32:
+  .quad _Bitset_size_32
+  
+_Bitset_size_32:
+  module          =0
+  meta            =010
+  instance        =020
+  size            =030
+  union           =040
+  intersection    =050
+  complement      =060
+  delta           =070
+  get             =0100
+  contains        =0110
+  indexOf         =0120
+  count           =0130
+  indices         =0140
+  strictSubsetOf  =0150
+  subsetOf        =0160
+  strictSupersetOf=0170
+  supersetOf      =0200
+  disjoint        =0210
+  void            =0220
+  nothing         =0230
+  universe        =0234
+  shiftLeft       =0240
+  shiftRight      =0250
+  shiftRightFill  =0260
+  rotateLeft      =0270
+  rotateRight     =0300
+  value           =0310
+  constantSpace   =0320
+Type:
+  .quad _bits32               ## module
+  .quad _Bitset_size_32_meta  ## metatype
+  .quad _instance
+  .quad 4                     ## size
+Bitset:
+Logical:
+  .quad _union
+  .quad _intersection
+  .quad _complement
+  .quad _delta
+Indexed:
+  .quad _get
+  .quad _contains
+  .quad _indexOf
+  .quad _count
+  .quad _indices
+Countable:
+  .quad _strictSubsetOf
+  .quad _subsetOf
+  .quad _strictSupersetOf
+  .quad _supersetOf
+  .quad _disjoint
+  .quad _void
+  .long 0                     ## nothing
+  .long 0xffffffff            ## universe
+Iterable:
+  .quad _shiftLeft
+  .quad _shiftRight
+  .quad _shiftRightFill
+  .quad _rotateLeft
+  .quad _rotateRight
+  .quad _value
+  .byte 1                     ## constantSpace
+  .zero 7
+Bitset_size_32_end:
+
+_Bitset_size_32_meta:
+  .quad _bits32               ## module
+  .quad 0                     ## metatype (TODO)
+  .quad _type                 ## instance
+  .quad (Bitset_size_32_end - _Bitset_size_32)  ## size
+Type_offset:
+  .quad 0
+Bitset_offset:
+  .quad (Bitset - _Bitset_size_32)
+Logical_offset:
+  .quad (Logical - _Bitset_size_32)
+Indexed_offset:
+  .quad (Indexed - _Bitset_size_32)
+Countable_offset:
+  .quad (Countable - _Bitset_size_32)
+Iterable_offset:
+  .quad (Iterable - _Bitset_size_32)
+Bitset_bits_32_meta_end:
