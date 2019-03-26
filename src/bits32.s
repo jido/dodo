@@ -133,7 +133,7 @@ _shiftRightFill:
   mov eax, edi
   mov cl, sil
   sar eax, cl
-  jmp r9
+  jmp r8
 
 _rotateLeft:
   mov eax, edi
