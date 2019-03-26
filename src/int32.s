@@ -7,8 +7,8 @@ _main:
   mov rax, int32_type[rax]        ## int32.Integer(<bits: 32>)
   mov edi, 3
   mov esi, 5
-  lea r8, main_end [rip]
-  lea r9, main_error [rip]
+  lea r8, main_end[rip]
+  lea r9, main_error[rip]
   jmp toPower[rax]
 main_error:
   mov al, -1
@@ -80,7 +80,7 @@ over_dividebyzero:
 
 _modulo:
   mov rcx, r8
-  lea r8, modulo_end [rip]
+  lea r8, modulo_end[rip]
   jmp _over                             ## note: assumes rcx is preserved
 modulo_end:
   xchg eax, edx
@@ -145,29 +145,29 @@ _toPower:
   push r9                           ## save event continuation
   sub rsp, 010
   mov dword ptr r[rsp], 1           ## calculation results
-  lea rcx, produceSquares [rip]     ## generator -> rcx
+  lea rcx, produceSquares[rip]      ## generator -> rcx
   mov rdx, rsp                      ## stack pointer -> rdx
   push rdi                          ## pass x to generator
   push rsi                          ## pass n to generator
 toPower_loop:
   mov rdi, rdx                      ## stack pointer -> rdi
-  lea r8, toPower_next [rip]
-  lea r9, toPower_done [rip]
-  lea r10, toPower_overflow [rip]
+  lea r8, toPower_next[rip]
+  lea r9, toPower_done[rip]
+  lea r10, toPower_overflow[rip]
   jmp rcx                           ## generate next value
 toPower_next:
   mov rcx, r8                       ## generator -> rcx
   mov r10, r9                       ## unwind -> r10
   mov rdx, rdi                      ## stack pointer -> rdx
   mov edi, dword ptr r[rdx]         ## r -> edi
-  lea r8, toPower2 [rip]
-  lea r9, toPower3 [rip]
+  lea r8, toPower2[rip]
+  lea r9, toPower3[rip]
   jmp _multiply                     ## r * generated value -- note: assumes rcx, rdx and r10 are preserved
 toPower2:
   mov dword ptr r[rdx], eax         ## save r
   jmp toPower_loop
 toPower3:
-  lea r9, toPower_overflow [rip]
+  lea r9, toPower_overflow[rip]
   jmp r10                           ## unwind generator
 toPower_done:
   pop rax
@@ -204,8 +204,8 @@ prodSquares_loop:
   mov n[rsp], rdx
   mov rdi, stackp[rsp]
   mov esi, eax                    ## x -> esi
-  lea r8, prodSquares1 [rip]
-  lea r9, prodSquares_short_end [rip]
+  lea r8, prodSquares1[rip]
+  lea r9, prodSquares_short_end[rip]
   jmp yield[rsp]                  ## yield x
 prodSquares1:
   mov yield[rsp], r8
@@ -218,8 +218,8 @@ prodSquares_next:
   shr edx, 1                      ## n >>= 1
   jz prodSquares_end
   mov edi, eax                    ## copy x -> edi
-  lea r8, prodSquares_loop [rip]
-  lea r9, prodSquares_overflow [rip]
+  lea r8, prodSquares_loop[rip]
+  lea r9, prodSquares_overflow[rip]
   jmp _multiply                   ## square x -- note: assumes edx is preserved
 prodSquares_end:
   mov r9, end[rsp]
@@ -232,11 +232,11 @@ prodSquares_overflow:
   jmp r10
   
 _instance:
-  mov eax, int32_proto[eax]
+  mov rax, int32_proto[rax]
   jmp r8
 
 _type:
-  mov eax, int32_type[eax]
+  mov rax, int32_type[rax]
   jmp r8
 
   .data
