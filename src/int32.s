@@ -2,7 +2,7 @@
 
   .globl  _main
   .p2align  4
-_mainWWW:
+_main:
   lea rax, _int32[rip]            ## module (_int32)
   mov rax, int32_type[rax]        ## int32.Integer(<bits: 32>)
   mov edi, 3

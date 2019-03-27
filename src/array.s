@@ -4,15 +4,15 @@
   .p2align  4
 _main:
   mov rbx, rsp                        ## save stack pointer
-  lea rax, _Array_template[rip]
-  mov rcx, meta[rax]
+  lea rax, _array[rip]
+  mov rcx, metatype[rax]
   sub rsp, size[rcx]                  ## allocate stack space for _Array_template
   lea rdi, _int32[rip]
   mov rdi, 010[rdi]                   ## _Integer_bits_32
   mov rsi, 5
   lea r8, main_next[rip]
   lea r9, main_end[rip]
-  jmp newArray[rax]                   ## create an instance of Array(<itemType: Integer(<bits: 32>), size: 5>)
+  jmp make[rax]                       ## create an instance of Array(<itemType: Integer(<bits: 32>), size: 5>)
 main_next:
   mov rax, rsp
   mov r12, rax                        ## save address of array type
@@ -122,8 +122,6 @@ _shiftLeft:                         ## precondition: rsi is a number in the rang
   mov return[rsp], r8
   mov rax, itemType[rax]
   mov rdx, size[rax]
-  cmp rdx, 16                       ## max item size 128 bits
-  jg shiftLeft_badItem
   lea r8, shiftLeft_start[rip]
   lea r9, shiftLeft_badItem[rip]
   jmp instance[rax]                 ## get instance of item type
@@ -204,12 +202,12 @@ _instance:
 _type:
   jmp r9
 
-_newArray:
+_new_Array_itemType_size:
   mov rdx, rdi
   mov r10, rsi
-  mov rsi, rax    ##_Array_template[rip]
+  lea rsi, _Array_template[rip]
   mov rdi, rsp
-  mov rcx, meta[rax]  ##_Array_template_meta[rip]
+  mov rcx, metatype[rax]
   mov rcx, size[rcx]
   shr rcx, 3
   cld
@@ -224,36 +222,36 @@ _newArray:
   .data
   .globl _array
 _array:
-  type =0
-  .quad _Array_template
+  make      =0
+  metatype  =010
+  .quad _new_Array_itemType_size
+  .quad _Array_template_meta
 
 _Array_template:
   module          =0
   meta            =010
   instance        =020
   size            =030
-  newArray        =040
-  itemType        =050
-  arraySize       =060
-  get             =070
-  contains        =0100
-  indexOf         =0110
-  count           =0120
-  indices         =0130
-  shiftLeft       =0140
-  shiftRight      =0150
-  shiftRightFill  =0160
-  rotateLeft      =0170
-  rotateRight     =0200
-  value           =0210
-  constantSpace   =0220
+  itemType        =040
+  arraySize       =050
+  get             =060
+  contains        =070
+  indexOf         =0100
+  count           =0110
+  indices         =0120
+  shiftLeft       =0130
+  shiftRight      =0140
+  shiftRightFill  =0150
+  rotateLeft      =0160
+  rotateRight     =0170
+  value           =0200
+  constantSpace   =0210
 Type:
   .quad _array                ## module
   .quad _Array_template_meta  ## metatype
   .quad _instance
   .quad 4                     ## size
 Array:
-  .quad _newArray
   .quad 0
   .quad 0
 Indexed:
