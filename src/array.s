@@ -18,14 +18,14 @@ main_next:
   mov r12, rax                        ## save address of array type
   sub rsp, size[rax]                  ## allocate stack space for an array
   mov dword ptr 8[rsp], 56
-  mov dword ptr 4[rsp], 99
-  mov dword ptr 0[rsp], 107
+  mov dword ptr 12[rsp], 99
+  mov dword ptr 16[rsp], 107
   sub rsp, size[rax]                  ## allocate stack space for an array
-  lea rdi, 20[rsp]
+  lea rdi, 24[rsp]
   mov rsi, 2
   lea r8, main_items[rip]
   lea r9, main_end[rip]
-  jmp shiftRightFill[rax]
+  jmp shiftLeft[rax]
 main_items:
   mov rax, r12
   mov rdi, rsp
@@ -141,13 +141,14 @@ _shiftLeft:                         ## precondition: rsi is a number in the rang
 shiftLeft_start:
   mov rsi, rax                      ## default value of item type
   mov rax, base[rsp]
-  mov r10, size[rax]                ## array size in bytes
-  mov rax, itemType[rax]
-  mov rcx, size[rax]                ## item size
+  mov rcx, itemType[rax]
+  mov rcx, size[rcx]                ## item size
   mov rdx, shift[rsp]               ## shift by that many items
   lea rdi, 040[rsp]
   mov r11, rdx
   imul r11, rcx                     ## amplitude of shift in bytes
+  mov r10, arraySize[rax]
+  imul r10, rcx                     ## array size in bytes
   sub r10, r11                      ## remaining bytes (keepers)
   add rdi, r10                      ## at the end of the array
   lea r8, shiftLeft_main[rip]
@@ -298,6 +299,9 @@ _new_Array_itemType_size:
   mov rdx, size[rdx]
   mov arraySize[rsp], r10
   imul r10, rdx
+  sub r10, 1
+  and r10, 0xfffffffffffffff8L
+  add r10, 8
   mov size[rsp], r10
   jmp r8
 
@@ -332,7 +336,7 @@ Type:
   .quad _array                ## module
   .quad _Array_template_meta  ## metatype
   .quad _instance
-  .quad 4                     ## size
+  .quad 0                     ## size
 Array:
   .quad 0
   .quad 0
