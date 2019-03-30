@@ -20,9 +20,9 @@ main_next:
   mov dword ptr 8[rsp], 56
   mov dword ptr 12[rsp], 99
   mov dword ptr 16[rsp], 107
-  sub rsp, size[rax]                  ## allocate stack space for an array
-  lea rdi, 24[rsp]
+  mov rdi, rsp
   mov rsi, 2
+  sub rsp, 020                        ## allocate stack space for a 3-item array of int32
   lea r8, main_items[rip]
   lea r9, main_end[rip]
   jmp shiftLeft[rax]
@@ -120,127 +120,71 @@ copy_loop:
 copy_end:
   jmp r8
 
-  base  =030
-  array =020
-  shift =010
-  return=0
 _shiftLeft:                         ## precondition: rsi is a number in the range 1...arraySize
   cmp rsi, 0
-  jle shiftLeft_invalid
-  cmp rsi, arraySize[rax]
-  jg shiftLeft_invalid
-  sub rsp, 040
-  mov base[rsp], rax
-  mov array[rsp], rdi
-  mov shift[rsp], rsi
-  mov return[rsp], r8
-  mov rax, itemType[rax]
-  lea r8, shiftLeft_start[rip]
-  lea r9, shiftLeft_badItem[rip]
-  jmp instance[rax]                 ## get instance of item type
-shiftLeft_start:
-  mov rsi, rax                      ## default value of item type
-  mov rax, base[rsp]
+  jle shiftLeft_end
+  mov r10, arraySize[rax]
+  cmp rsi, r10
+  jg shiftLeft_end
   mov rcx, itemType[rax]
   mov rcx, size[rcx]                ## item size
-  mov rdx, shift[rsp]               ## shift by that many items
-  lea rdi, 040[rsp]
-  mov r11, rdx
-  imul r11, rcx                     ## amplitude of shift in bytes
-  mov r10, arraySize[rax]
-  imul r10, rcx                     ## array size in bytes
-  sub r10, r11                      ## remaining bytes (keepers)
-  add rdi, r10                      ## at the end of the array
-  lea r8, shiftLeft_main[rip]
-  jmp copy
-shiftLeft_main:
-  mov rcx, r10                      ## number of bytes to copy
+  mov rdx, rsi                      ## shift by that many items
+  imul rdx, rcx                     ## amplitude of shift in bytes
+  mov rsi, rdi
+  add rsi, rdx                      ## source address
+  mov rdi, rsp                      ## destination address
+  imul rcx, r10                     ## array size in bytes
+  sub rcx, rdx                      ## remaining bytes (keepers)
   mov rdx, 1                        ## no repetition
-  mov rsi, array[rsp]
-  add rsi, r11                      ## source address
-  lea rdi, 040[rsp]                 ## destination address
+  mov r9, r8                        ## note: not used by copy
   lea r8, shiftLeft_end[rip]
   jmp copy
 shiftLeft_end:
-  mov r9, return[rsp]
-shiftLeft_badItem:
-  add rsp, 040
-shiftLeft_invalid:
   jmp r9
 
-  base  =030
-  array =020
-  shift =010
-  return=0
 _shiftRight:                        ## precondition: rsi is a number in the range 1...arraySize
   cmp rsi, 0
-  jle shiftRight_invalid
-  cmp rsi, arraySize[rax]
-  jg shiftRight_invalid
-  sub rsp, 040
-  mov base[rsp], rax
-  mov array[rsp], rdi
-  mov shift[rsp], rsi
-  mov return[rsp], r8
-  mov rax, itemType[rax]
-  lea r8, shiftRight_start[rip]
-  lea r9, shiftRight_badItem[rip]
-  jmp instance[rax]                 ## get instance of item type
-shiftRight_start:
-  mov rsi, rax                      ## default value of item type
-  mov rax, base[rsp]
-  mov rax, itemType[rax]
-  mov rcx, size[rax]                ## item size
-  mov r10, rcx
-  mov rdx, shift[rsp]               ## shift by that many items
-  lea rdi, 040[rsp]
-  lea r8, shiftRight_main[rip]
-  jmp copy
-shiftRight_main:
-  mov rsi, array[rsp]               ## source address
-  mov rax, base[rsp]
+  jle shiftRight_end
   mov rdx, arraySize[rax]
-  sub rdx, shift[rsp]               ## remaining items (keepers)
-  mov rcx, r10
+  cmp rsi, rdx
+  jg shiftRight_end
+  mov rcx, itemType[rax]
+  mov rcx, size[rcx]                ## item size
+  sub rdx, rsi                      ## remaining items (keepers)
   imul rcx, rdx                     ## number of bytes to copy
   mov rdx, 1                        ## no repetition
+  mov rsi, rdi                      ## source address
+  mov rdi, rsp                      ## destination address
+  mov r9, r8                        ## note: not used by copy
   lea r8, shiftRight_end[rip]
   jmp copy
 shiftRight_end:
-  mov r9, return[rsp]
-shiftRight_badItem:
-  add rsp, 040
-shiftRight_invalid:
   jmp r9
 
 _shiftRightFill:                    ## precondition: rsi is a number in the range 1...arraySize
   cmp rsi, 0
-  jle shiftRightFill_invalid
+  jle shiftRightFill_end
   mov r10, arraySize[rax]
   cmp rsi, r10
-  jg shiftRightFill_invalid
+  jg shiftRightFill_end
   mov rdx, rsi                      ## shift by that many items
+  sub r10, rdx                      ## remaining items (keepers)
   mov rsi, rdi                      ## first item of the array
+  mov rdi, rsp                      ## destination address
   mov rcx, itemType[rax]
   mov rcx, size[rcx]                ## item size
-  mov rdi, rsp
-  mov r11, r8
-  mov r13, rcx
-  mov r14, rdx
+  push rcx
+  mov r9, r8                        ## note: not used by copy
   lea r8, shiftRightFill_main[rip]
   jmp copy
 shiftRightFill_main:
-  mov rcx, r13
-  mov rdx, r14
+  pop rcx
   sub rsi, rcx                      ## source address
-  sub r10, rdx                      ## remaining items (keepers)
   imul rcx, r10                     ## number of bytes to copy
   mov rdx, 1                        ## no repetition
   lea r8, shiftRightFill_end[rip]
   jmp copy
 shiftRightFill_end:
-  jmp r11
-shiftRightFill_invalid:
   jmp r9
 
 _rotateLeft:
@@ -353,7 +297,7 @@ Iterable:
   .quad _rotateLeft
   .quad _rotateRight
   .quad _value
-  .byte 1
+  .byte 0
   .zero 7                     ## 7 bytes padding
 Array_template_end:
 
