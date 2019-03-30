@@ -17,6 +17,8 @@ main_next:
   mov rax, rsp
   mov r12, rax                        ## save address of array type
   sub rsp, size[rax]                  ## allocate stack space for an array
+  mov dword ptr [rsp], 19
+  mov dword ptr 4[rsp], 22
   mov dword ptr 8[rsp], 56
   mov dword ptr 12[rsp], 99
   mov dword ptr 16[rsp], 107
@@ -143,21 +145,48 @@ shiftLeft_end:
   jmp r9
 
 _shiftRight:                        ## precondition: rsi is a number in the range 1...arraySize
+  array =040
+  itype =030
+  event =020
+  return=010
+  shift =0
   cmp rsi, 0
   jle shiftRight_end
-  mov rdx, arraySize[rax]
-  cmp rsi, rdx
+  mov r10, arraySize[rax]
+  cmp rsi, r10
   jg shiftRight_end
+  sub rsp, array
+  mov shift[rsp], rsi
+  mov return[rsp], r8
+  mov event[rsp], r9
   mov rcx, itemType[rax]
+  mov itype[rsp], rcx
   mov rcx, size[rcx]                ## item size
-  sub rdx, rsi                      ## remaining items (keepers)
-  imul rcx, rdx                     ## number of bytes to copy
+  imul rsi, rcx                     ## amplitude of shift in bytes
+  imul rcx, r10                     ## number of bytes to copy
   mov rdx, 1                        ## no repetition
-  mov rsi, rdi                      ## source address
-  mov rdi, rsp                      ## destination address
-  mov r9, r8                        ## note: not used by copy
-  lea r8, shiftRight_end[rip]
+  xchg rsi, rdi                     ## source address -> rsi
+  lea rdi, array[rsp + rdi]         ## destination address
+  lea r8, shiftRight_zero[rip]
   jmp copy
+shiftRight_zero:
+  mov rax, itype[rsp]
+  lea r8, shiftRight_fill[rip]
+  lea r9, shiftRight_badItem[rip]
+  jmp instance[rax]
+shiftRight_fill:
+  mov rsi, rax                      ## default value of item type
+  lea rdi, array[rsp]               ## destination address
+  mov rdx, shift[rsp]
+  mov rcx, itype[rsp]
+  mov rcx, size[rcx]
+  mov r9, return[rsp]               ## note: not used by copy
+  add rsp, array                    ## restore stack pointer
+  lea r8, shiftRight_end[rip]
+  jmp copy                          ## fill first items with default value
+shiftRight_badItem:
+  mov r9, event[rsp]
+  add rsp, array                    ## restore stack pointer
 shiftRight_end:
   jmp r9
 
@@ -168,20 +197,18 @@ _shiftRightFill:                    ## precondition: rsi is a number in the rang
   cmp rsi, r10
   jg shiftRightFill_end
   mov rdx, rsi                      ## shift by that many items
-  sub r10, rdx                      ## remaining items (keepers)
+  inc rdx                           ## copy first item one time extra
   mov rsi, rdi                      ## first item of the array
   mov rdi, rsp                      ## destination address
   mov rcx, itemType[rax]
   mov rcx, size[rcx]                ## item size
-  push rcx
+  imul r10, rcx
   mov r9, r8                        ## note: not used by copy
   lea r8, shiftRightFill_main[rip]
   jmp copy
 shiftRightFill_main:
-  pop rcx
-  sub rsi, rcx                      ## source address
-  imul rcx, r10                     ## number of bytes to copy
   mov rdx, 1                        ## no repetition
+  mov rcx, r10                      ## number of bytes to copy
   lea r8, shiftRightFill_end[rip]
   jmp copy
 shiftRightFill_end:
