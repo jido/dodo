@@ -24,7 +24,7 @@ main_next:
   mov dword ptr 16[rsp], 107
   mov rdi, rsp
   mov rsi, 2
-  sub rsp, 020                        ## allocate stack space for a 3-item array of int32
+  sub rsp, 030                        ## allocate stack space for a 3-item array of int32
   lea r8, main_items[rip]
   lea r9, main_end[rip]
   jmp shiftLeft[rax]
@@ -202,6 +202,7 @@ _shiftRightFill:                    ## precondition: rsi is a number in the rang
   mov rdi, rsp                      ## destination address
   mov rcx, itemType[rax]
   mov rcx, size[rcx]                ## item size
+  dec r10                           ## take out first item
   imul r10, rcx
   mov r9, r8                        ## note: not used by copy
   lea r8, shiftRightFill_main[rip]
