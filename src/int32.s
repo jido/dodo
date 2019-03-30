@@ -32,7 +32,7 @@ null_is_not:
 
 _successor:
   mov eax, edi
-  add eax, 1
+  inc eax
   jo successor_overflow
   jmp r8
 successor_overflow:
@@ -40,7 +40,7 @@ successor_overflow:
 
 _predecessor:
   mov eax, edi
-  sub eax, 1
+  dec eax
   jo predecessor_underflow
   jmp r8
 predecessor_underflow:

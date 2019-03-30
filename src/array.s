@@ -24,7 +24,7 @@ main_next:
   mov dword ptr 16[rsp], 107
   mov rdi, rsp
   mov rsi, 2
-  sub rsp, 030                        ## allocate stack space for a 3-item array of int32
+  sub rsp, 020                        ## allocate stack space for a 3-item array of int32
   lea r8, main_items[rip]
   lea r9, main_end[rip]
   jmp shiftLeft[rax]
@@ -55,7 +55,7 @@ _get:                                 ## precondition: rsi is a number in the ra
   jg get_outofbounds
   mov rdx, itemType[rax]
   mov rdx, size[rdx]                  ## TODO: size > 8
-  sub rsi, 1
+  dec rsi
   imul rsi, rdx
   mov rcx, rsi
   and rsi, 0xfffffffffffffff8L        ## 8 bytes alignment
@@ -67,7 +67,7 @@ _get:                                 ## precondition: rsi is a number in the ra
   mov rcx, rdx                        ## item size
   shl rcx, 3
   shl rsi, cl
-  sub rsi, 1                          ## bitmask = (1 << bitsize) - 1
+  dec rsi                             ## bitmask = (1 << bitsize) - 1
   and rax, rsi
   jmp r8
 get_outofbounds:
@@ -100,7 +100,7 @@ indices_loop:
   jmp rcx                           ## yield current index
 indices_next:
   mov rax, current[rsp]
-  add rax, 1
+  inc rax
   jmp indices_loop
 indices_end:
   mov rsp, rdi                      ## restore stack pointer
@@ -115,7 +115,7 @@ copy_loop:
   rep movsb
   cmp rdx, 1
   jle copy_end
-  sub rdx, 1
+  dec rdx
   mov rcx, rax
   sub rsi, rcx
   jmp copy_loop
@@ -245,7 +245,7 @@ value_loop:
 value_next:
   mov rax, atype[rsp]
   mov rcx, index[rsp]
-  add rcx, 1
+  inc rcx
   jmp value_loop
 value_end:
   mov rsp, rdi
@@ -271,7 +271,7 @@ _new_Array_itemType_size:
   mov rdx, size[rdx]
   mov arraySize[rsp], r10
   imul r10, rdx
-  sub r10, 1
+  dec r10
   and r10, 0xfffffffffffffff8L
   add r10, 8
   mov size[rsp], r10
