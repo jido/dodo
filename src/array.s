@@ -222,33 +222,53 @@ _rotateRight:
   jmp r9
 
   ## Generator yielding the value of the items in the array
-  array =020
-  atype =010
-  index =0
+  array =060
+  unwind=050
+  resume=040
+  stack =030
+  yield =020
+  end   =010
+  atype =0
 _value:
-  sub rsp, 020
-  mov atype[rsp], rax
-  mov rcx, 0
-value_loop:
-  cmp rcx, arraySize[rax]
-  jge value_end
-  mov index[rsp], rcx
-  mov rdx, itemType[rax]
-  imul rcx, size[rdx]
-  mov rax, array[rsp]
-  add rax, rcx
-  mov rax, [rax]
-  mov rcx, r8
-  lea r8, value_next[rip]
+  sub rsp, array
+  mov atype[rsp], rax               ## save context
+  mov stack[rsp], rdi               ## save caller stack pointer        
+  mov yield[rsp], r8                ## save yield continuation        
+  mov end[rsp], r9                  ## save end of yield continuation        
+  mov rdi, rsp                      ## pass current stack pointer to indices        
+  lea r8, value_get[rip]
   lea r9, value_end[rip]
-  jmp rcx
+  jmp _indices                      ## indices generator        
+value_get:
+  mov resume[rdi], r8               ## save indices resume continuation        
+  mov unwind[rdi], r9               ## save indices unwind continuation        
+  push rdi                          ## save current rdi        
+  mov rsi, rax                      ## array index        
+  mov rax, atype[rdi]               ## context        
+  mov rdi, array[rdi]               ## array        
+  lea r8, value_yield[rip]
+  lea r9, value_abort[rip]
+  jmp _get                          ## get item        
+value_yield:
+  mov r10, [rsp]
+  mov rdi, stack[r10]               ## caller stack        
+  lea r8, value_next[rip]
+  lea r9, value_abort[rip]
+  jmp yield[r10]                    ## yield item        
 value_next:
-  mov rax, atype[rsp]
-  mov rcx, index[rsp]
-  inc rcx
-  jmp value_loop
+  pop rdi                           ## restore rdi        
+  mov yield[rdi], r8                ## save yield continuation        
+  mov end[rdi], r9                  ## save end of yield continuation        
+  lea r8, value_get[rip]
+  lea r9, value_end[rip]
+  jmp resume[rdi]                   ## next value from indices        
+value_abort:
+  pop rdi                           ## restore rdi        
+  lea r9, value_end[rip]
+  jmp unwind[rdi]                   ## unwind indices generator        
 value_end:
-  mov rsp, rdi
+  mov r9, end[rsp]
+  mov rsp, stack[rsp]               ## restore caller stack pointer        
   jmp r9
 
 _instance:
